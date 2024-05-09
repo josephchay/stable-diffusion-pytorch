@@ -50,11 +50,11 @@ class CLIPLayer(nn.Module):
         super().__init__()
 
         # Pre-attention norm
-        self.layer_norm_1 = nn.LayerNorm(n_embd)
+        self.layernorm_1 = nn.LayerNorm(n_embd)
         # Self attention
         self.attention = SelfAttention(n_head, n_embd)
         # Pre-FNN norm
-        self.layer_norm_2 = nn.LayerNorm(n_embd)
+        self.layernorm_2 = nn.LayerNorm(n_embd)
         # Feedforward layer
         self.linear_1 = nn.Linear(n_embd, 4 * n_embd)
         self.linear_2 = nn.Linear(4 * n_embd, n_embd)
@@ -72,7 +72,7 @@ class CLIPLayer(nn.Module):
 
         # Self Attention
         # (Batch_Size, Seq_Len, Dim) -> (Batch_Size, Seq_Len, Dim)
-        x = self.layer_norm_1(x)
+        x = self.layernorm_1(x)
 
         # (Batch_Size, Seq_Len, Dim) -> (Batch_Size, Seq_Len, Dim)
         x = self.attention(x, causal_mask=True)
@@ -85,7 +85,7 @@ class CLIPLayer(nn.Module):
 
         residue = x
         # (Batch_Size, Seq_Len, Dim) -> (Batch_Size, Seq_Len, Dim)
-        x = self.layer_norm_2(x)
+        x = self.layernorm_2(x)
 
         # (Batch_Size, Seq_Len, Dim) -> (Batch_Size, Seq_Len, 4 * Dim)
         x = self.linear_1(x)
@@ -117,7 +117,7 @@ class CLIP(nn.Module):
             CLIPLayer(12, 768) for i in range(12)
         ])
 
-        self.layer_norm = nn.LayerNorm(768)
+        self.layernorm = nn.LayerNorm(768)
 
     def forward(self, tokens: torch.LongTensor) -> torch.FloatTensor:
         """
@@ -136,6 +136,6 @@ class CLIP(nn.Module):
             # (Batch_Size, Seq_Len, Dim) -> (Batch_Size, Seq_Len, Dim)
             state = layer(state)
         # (Batch_Size, Seq_Len, Dim) -> (Batch_Size, Seq_Len, Dim)
-        output = self.layer_norm(state)
+        output = self.layernorm(state)
 
         return output

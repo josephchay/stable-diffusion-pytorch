@@ -17,7 +17,7 @@ class VAEAttentionBlock(nn.Module):
         """
         super().__init__()
 
-        self.group_norm = nn.GroupNorm(32, channels)
+        self.groupnorm = nn.GroupNorm(32, channels)
         self.attention = SelfAttention(1, channels)
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
@@ -34,7 +34,7 @@ class VAEAttentionBlock(nn.Module):
         residue = x
 
         # (Batch_Size, Features, Height, Width) -> (Batch_Size, Features, Height, Width)
-        x = self.group_norm(x)
+        x = self.groupnorm(x)
 
         n, c, h, w = x.shape
 
@@ -75,10 +75,10 @@ class VAEResidualBlock(nn.Module):
 
         super().__init__()
 
-        self.group_norm_1 = nn.GroupNorm(32, in_channels)
+        self.groupnorm_1 = nn.GroupNorm(32, in_channels)
         self.conv_1 = nn.Conv2d(in_channels, out_channels, kernel_size=3, padding=1)
 
-        self.group_norm_2 = nn.GroupNorm(32, out_channels)
+        self.groupnorm_2 = nn.GroupNorm(32, out_channels)
         self.conv_2 = nn.Conv2d(out_channels, out_channels, kernel_size=3, padding=1)
 
         if in_channels == out_channels:
@@ -100,7 +100,7 @@ class VAEResidualBlock(nn.Module):
         residue = x
 
         # (Batch_Size, In_Channels, Height, Width) -> (Batch_Size, In_Channels, Height, Width)
-        x = self.group_norm_1(x)
+        x = self.groupnorm_1(x)
 
         # (Batch_Size, In_Channels, Height, Width) -> (Batch_Size, In_Channels, Height, Width)
         x = func.silu(x)
@@ -109,7 +109,7 @@ class VAEResidualBlock(nn.Module):
         x = self.conv_1(x)
 
         # (Batch_Size, Out_Channels, Height, Width) -> (Batch_Size, Out_Channels, Height, Width)
-        x = self.group_norm_2(x)
+        x = self.groupnorm_2(x)
 
         # (Batch_Size, Out_Channels, Height, Width) -> (Batch_Size, Out_Channels, Height, Width)
         x = func.silu(x)

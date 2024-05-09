@@ -57,11 +57,11 @@ class UNETResidualBlock(nn.Module):
 
         super().__init__()
 
-        self.group_norm_feature = nn.GroupNorm(32, in_channels)
+        self.groupnorm_feature = nn.GroupNorm(32, in_channels)
         self.conv_feature = nn.Conv2d(in_channels, out_channels, kernel_size=3, padding=1)
         self.linear_time = nn.Linear(n_time, out_channels)
 
-        self.group_norm_merged = nn.GroupNorm(32, out_channels)
+        self.groupnorm_merged = nn.GroupNorm(32, out_channels)
         self.conv_merged = nn.Conv2d(out_channels, out_channels, kernel_size=3, padding=1)
 
         if in_channels == out_channels:
@@ -85,7 +85,7 @@ class UNETResidualBlock(nn.Module):
         residue = feature
 
         # (Batch_Size, In_Channels, Height, Width) -> (Batch_Size, In_Channels, Height, Width)
-        feature = self.group_norm_feature(feature)
+        feature = self.groupnorm_feature(feature)
 
         # (Batch_Size, In_Channels, Height, Width) -> (Batch_Size, In_Channels, Height, Width)
         feature = func.silu(feature)
@@ -104,7 +104,7 @@ class UNETResidualBlock(nn.Module):
         merged = feature + time.unsqueeze(-1).unsqueeze(-1)
 
         # (Batch_Size, Out_Channels, Height, Width) -> (Batch_Size, Out_Channels, Height, Width)
-        merged = self.group_norm_merged(merged)
+        merged = self.groupnorm_merged(merged)
 
         # (Batch_Size, Out_Channels, Height, Width) -> (Batch_Size, Out_Channels, Height, Width)
         merged = func.silu(merged)
@@ -132,14 +132,14 @@ class UNETAttentionBlock(nn.Module):
 
         channels = n_head * n_embd
 
-        self.group_norm = nn.GroupNorm(32, channels, eps=1e-6)
+        self.groupnorm = nn.GroupNorm(32, channels, eps=1e-6)
         self.conv_input = nn.Conv2d(channels, channels, kernel_size=1, padding=0)
 
-        self.layer_norm_1 = nn.LayerNorm(channels)
+        self.layernorm_1 = nn.LayerNorm(channels)
         self.attention_1 = SelfAttention(n_head, channels, in_proj_bias=False)
-        self.layer_norm_2 = nn.LayerNorm(channels)
+        self.layernorm_2 = nn.LayerNorm(channels)
         self.attention_2 = CrossAttention(n_head, channels, d_context, in_proj_bias=False)
-        self.layer_norm_3 = nn.LayerNorm(channels)
+        self.layernorm_3 = nn.LayerNorm(channels)
         self.linear_geglu_1 = nn.Linear(channels, 4 * channels * 2)
         self.linear_geglu_2 = nn.Linear(4 * channels, channels)
 
@@ -162,7 +162,7 @@ class UNETAttentionBlock(nn.Module):
         residue_long = x
 
         # (Batch_Size, Features, Height, Width) -> (Batch_Size, Features, Height, Width)
-        x = self.group_norm(x)
+        x = self.groupnorm(x)
 
         # (Batch_Size, Features, Height, Width) -> (Batch_Size, Features, Height, Width)
         x = self.conv_input(x)
@@ -181,7 +181,7 @@ class UNETAttentionBlock(nn.Module):
         residue_short = x
 
         # (Batch_Size, Height * Width, Features) -> (Batch_Size, Height * Width, Features)
-        x = self.layer_norm_1(x)
+        x = self.layernorm_1(x)
 
         # (Batch_Size, Height * Width, Features) -> (Batch_Size, Height * Width, Features)
         x = self.attention_1(x)
@@ -195,7 +195,7 @@ class UNETAttentionBlock(nn.Module):
         # Normalization + Cross-Attention with skip connection
 
         # (Batch_Size, Height * Width, Features) -> (Batch_Size, Height * Width, Features)
-        x = self.layer_norm_2(x)
+        x = self.layernorm_2(x)
 
         # (Batch_Size, Height * Width, Features) -> (Batch_Size, Height * Width, Features)
         x = self.attention_2(x, context)
@@ -209,7 +209,7 @@ class UNETAttentionBlock(nn.Module):
         # Normalization + FFN with GeGLU and skip connection
 
         # (Batch_Size, Height * Width, Features) -> (Batch_Size, Height * Width, Features)
-        x = self.layer_norm_3(x)
+        x = self.layernorm_3(x)
 
         # GeGLU as implemented in the original code: https://github.com/CompVis/stable-diffusion/blob/21f890f9da3cfbeaba8e2ac3c425ee9e998d5229/ldm/modules/attention.py#L37C10-L37C10
         # (Batch_Size, Height * Width, Features) -> two tensors of shape (Batch_Size, Height * Width, Features * 4)
@@ -438,7 +438,7 @@ class UNETOutputLayer(nn.Module):
     def __init__(self, in_channels, out_channels):
         super().__init__()
 
-        self.group_norm = nn.GroupNorm(32, in_channels)
+        self.groupnorm = nn.GroupNorm(32, in_channels)
         self.conv = nn.Conv2d(in_channels, out_channels, kernel_size=3, padding=1)
 
     def forward(self, x):
@@ -453,7 +453,7 @@ class UNETOutputLayer(nn.Module):
         # x: (Batch_Size, 320, Height / 8, Width / 8)
 
         # (Batch_Size, 320, Height / 8, Width / 8) -> (Batch_Size, 320, Height / 8, Width / 8)
-        x = self.group_norm(x)
+        x = self.groupnorm(x)
 
         # (Batch_Size, 320, Height / 8, Width / 8) -> (Batch_Size, 320, Height / 8, Width / 8)
         x = func.silu(x)
