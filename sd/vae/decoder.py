@@ -7,11 +7,28 @@ from sd.attention.attention import SelfAttention
 
 class VAEAttentionBlock(nn.Module):
     def __init__(self, channels: int):
+        """
+        An attention block specifically designed for use in Variational Autoencoders (VAEs) that handles feature maps
+        from convolutional layers. This block applies group normalization followed by a self-attention mechanism to enhance
+        the representational capacity of the features, allowing each spatial feature to interact and recalibrate based on
+        the global context provided by other features in the same map.
+
+        :param channels: Number of feature channels in the input feature map.
+        """
         super().__init__()
+
         self.group_norm = nn.GroupNorm(32, channels)
         self.attention = SelfAttention(1, channels)
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
+        """
+        Forward pass through the attention block.
+
+        :param x: Input tensor of shape (Batch_Size, Features, Height, Width)
+
+        :return: Output tensor with the same shape as input after applying group normalization and self-attention.
+        """
+
         # x: (Batch_Size, Features, Height, Width)
 
         residue = x
@@ -46,11 +63,22 @@ class VAEAttentionBlock(nn.Module):
 
 class VAEResidualBlock(nn.Module):
     def __init__(self, in_channels, out_channels):
+        """
+        A residual block tailored for VAE architectures that applies two sequential convolutional layers with an
+        interspersed activation, using group normalization to stabilize the activations before each convolution.
+        A residual connection is included to support effective gradient flow and mitigate vanishing gradients
+        during deep network training.
+
+        :param in_channels: Number of input channels.
+        :param out_channels: Number of output channels. If different from input channels, adapts the residual path.
+        """
+
         super().__init__()
-        self.groupnorm_1 = nn.GroupNorm(32, in_channels)
+
+        self.group_norm_1 = nn.GroupNorm(32, in_channels)
         self.conv_1 = nn.Conv2d(in_channels, out_channels, kernel_size=3, padding=1)
 
-        self.groupnorm_2 = nn.GroupNorm(32, out_channels)
+        self.group_norm_2 = nn.GroupNorm(32, out_channels)
         self.conv_2 = nn.Conv2d(out_channels, out_channels, kernel_size=3, padding=1)
 
         if in_channels == out_channels:
@@ -59,12 +87,20 @@ class VAEResidualBlock(nn.Module):
             self.residual_layer = nn.Conv2d(in_channels, out_channels, kernel_size=1, padding=0)
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
+        """
+        Forward pass through the residual block.
+
+        :param x: Input tensor of shape (Batch_Size, In_Channels, Height, Width)
+
+        :return: Output tensor of the same spatial dimensions but possibly different channels due to the convolutions.
+        """
+
         # x: (Batch_Size, In_Channels, Height, Width)
 
         residue = x
 
         # (Batch_Size, In_Channels, Height, Width) -> (Batch_Size, In_Channels, Height, Width)
-        x = self.groupnorm_1(x)
+        x = self.group_norm_1(x)
 
         # (Batch_Size, In_Channels, Height, Width) -> (Batch_Size, In_Channels, Height, Width)
         x = func.silu(x)
@@ -73,7 +109,7 @@ class VAEResidualBlock(nn.Module):
         x = self.conv_1(x)
 
         # (Batch_Size, Out_Channels, Height, Width) -> (Batch_Size, Out_Channels, Height, Width)
-        x = self.groupnorm_2(x)
+        x = self.group_norm_2(x)
 
         # (Batch_Size, Out_Channels, Height, Width) -> (Batch_Size, Out_Channels, Height, Width)
         x = func.silu(x)
@@ -87,6 +123,14 @@ class VAEResidualBlock(nn.Module):
 
 class VAEDecoder(nn.Sequential):
     def __init__(self):
+        """
+        Decoder component of a VAE that upsamples and processes feature maps to reconstruct the input image. It employs
+        multiple residual blocks, attention mechanisms, and upsampling layers to gradually increase the spatial resolution
+        while refining feature details, aiming to generate high-quality outputs from the compressed latent representations.
+
+        Inherits from nn.Sequential to chain operations in a direct forward manner.
+        """
+
         super().__init__(
             # (Batch_Size, 4, Height / 8, Width / 8) -> (Batch_Size, 4, Height / 8, Width / 8)
             nn.Conv2d(4, 4, kernel_size=1, padding=0),
@@ -169,6 +213,14 @@ class VAEDecoder(nn.Sequential):
         )
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
+        """
+        Executes the decoder sequence on the input tensor.
+
+        :param x: Input tensor of shape (Batch_Size, 4, Height / 8, Width / 8), representing compressed latent features.
+
+        :return: Output tensor of shape (Batch_Size, 3, Height, Width), representing the reconstructed image.
+        """
+
         # x: (Batch_Size, 4, Height / 8, Width / 8)
 
         # Remove the scaling added by the Encoder.

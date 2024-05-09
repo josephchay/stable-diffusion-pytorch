@@ -6,6 +6,16 @@ from sd.vae.decoder import VAEAttentionBlock, VAEResidualBlock
 
 
 class VAEEncoder(nn.Sequential):
+    """
+    Encoder component of a Variational Autoencoder (VAE) that downsamples and processes the input image into a
+    lower-dimensional latent space. It utilizes convolutional layers for spatial reduction, interspersed with
+    residual blocks to enhance feature extraction, and an attention block for capturing long-range dependencies
+    within the image. The final layers of the encoder output the mean and log variance used for the reparameterization
+    trick in VAEs.
+
+    Inherits from nn.Sequential for simplified forward chaining of operations.
+    """
+
     def __init__(self):
         super().__init__(
             # (Batch_Size, Channel, Height, Width) -> (Batch_Size, 128, Height, Width)
@@ -72,6 +82,16 @@ class VAEEncoder(nn.Sequential):
         )
 
     def forward(self, x: torch.Tensor, noise: torch.Tensor):
+        """
+        Forward pass of the encoder, which takes an input image and corresponding noise for reparameterization,
+        and outputs transformed latent variables (mean and log variance).
+
+        :param x: Input tensor of shape (Batch_Size, Channel, Height, Width)
+        :param noise: Random noise tensor, typically drawn from a standard normal distribution, of shape (Batch_Size, 4, Height / 8, Width / 8)
+
+        :return: The transformed latent space tensor after applying the mean and noise-adjusted standard deviation.
+        """
+
         # x: (Batch_Size, Channel, Height, Width)
         # noise: (Batch_Size, 4, Height / 8, Width / 8)
 
@@ -98,7 +118,7 @@ class VAEEncoder(nn.Sequential):
         # (Batch_Size, 4, Height / 8, Width / 8) -> (Batch_Size, 4, Height / 8, Width / 8)
         x = mean + stdev * noise
 
-        # Scale by a constant
+        # Scale by a constant (reason currently unknown)
         # taken from: https://github.com/CompVis/stable-diffusion/blob/21f890f9da3cfbeaba8e2ac3c425ee9e998d5229/configs/stable-diffusion/v1-inference.yaml#L17C1-L17C1
         x *= 0.18215
 
