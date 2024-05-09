@@ -2,7 +2,7 @@ import torch
 import numpy as np
 from tqdm import tqdm
 
-from sd.ddpm import DDPMSampler
+from src.ddpm import DDPMSampler
 
 WIDTH = 512
 HEIGHT = 512

@@ -1,7 +1,7 @@
 import torch
 from torch import nn
 
-from sd.attention import SelfAttention
+from src.attention import SelfAttention
 
 
 class CLIPEmbedding(nn.Module):

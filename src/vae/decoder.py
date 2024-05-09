@@ -2,7 +2,7 @@ import torch
 from torch import nn
 from torch.nn import functional as func
 
-from sd.attention.attention import SelfAttention
+from src.attention.attention import SelfAttention
 
 
 class VAEAttentionBlock(nn.Module):

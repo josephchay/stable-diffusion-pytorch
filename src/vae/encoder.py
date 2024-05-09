@@ -2,7 +2,7 @@ import torch
 from torch import nn
 from torch.nn import functional as func
 
-from sd.vae.decoder import VAEAttentionBlock, VAEResidualBlock
+from src.vae.decoder import VAEAttentionBlock, VAEResidualBlock
 
 
 class VAEEncoder(nn.Sequential):

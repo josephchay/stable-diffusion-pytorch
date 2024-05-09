@@ -1,6 +1,6 @@
-from sd.clip import CLIP
-from sd.vae import VAEEncoder, VAEDecoder
-from sd.diffusion import Diffusion
+from src.clip import CLIP
+from src.vae import VAEEncoder, VAEDecoder
+from src.diffusion import Diffusion
 
 
 import model_converter
