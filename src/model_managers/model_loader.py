@@ -1,9 +1,7 @@
 from src.clip import CLIP
+from src.model_managers import model_converter
 from src.vae import VAEEncoder, VAEDecoder
 from src.diffusion import Diffusion
-
-
-import model_converter
 
 
 def preload_models_from_standard_weights(ckpt_path, device):

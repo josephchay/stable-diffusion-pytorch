@@ -1,4 +1,5 @@
 import torch
+import pytorch_lightning as pl
 
 
 def load_from_standard_weights(input_file: str, device: str) -> dict[str, torch.Tensor]:
