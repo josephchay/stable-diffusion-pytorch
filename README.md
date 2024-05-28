@@ -18,19 +18,19 @@ MODEL_FILE_PATH = "../assets/v1-5-pruned-emaonly.ckpt"
 
 2. Set the configuration hyperparameters.
 ```markdown
-#- `prompt` (str): The text prompt to be used for generating the output image.
-#- `uncond_prompt` (str): Also known as negative prompt. Default: `""`
-#- `do_cfg` (bool): Default: `True`
-#- `cfg_scale` (int): Default: `8`. min: 1, max: 14
-#- `sampler` (str): Default: `"ddpm"`
-#- `num_inference_steps` (int): Default: `50`
-#- `seed` (int): Default: `42`
-#- `strength` (float): Higher values add more noise to input image and will make the output image less similar to it.
-#- `input_image` (PIL.Image): The input image to be used for generating the output image. Not need for TTI Default: `None`
-#- `idle_device` (str): Default: `"cpu"`
-#- `device` (str): The device to be used for generating the output image.
-#- `models` (dict): The models to be used for generating the output image.
-#- `tokenizer` (transformers.CLIPTokenizer): The tokenizer to be used for generating the output image.
+- `prompt` (str): The text prompt to be used for generating the output image.
+- `uncond_prompt` (str): Also known as negative prompt. Default: `""`
+- `do_cfg` (bool): Default: `True`
+- `cfg_scale` (int): Default: `8`. min: 1, max: 14
+- `sampler` (str): Default: `"ddpm"`
+- `num_inference_steps` (int): Default: `50`
+- `seed` (int): Default: `42`
+- `strength` (float): Higher values add more noise to input image and will make the output image less similar to it.
+- `input_image` (PIL.Image): The input image to be used for generating the output image. Not need for TTI Default: `None`
+- `idle_device` (str): Default: `"cpu"`
+- `device` (str): The device to be used for generating the output image.
+- `models` (dict): The models to be used for generating the output image.
+- `tokenizer` (transformers.CLIPTokenizer): The tokenizer to be used for generating the output image.
 ```
 
 3. Create sample prompts
